@@ -25,9 +25,24 @@ function! NewDaylog()
   python3 daylog.new_daylog()
 endfunction
 
-function! ViewDaylog()
-  python3 daylog.view_daylog()
+function! ViewDaylog(mode)
+  python3 daylog.view_daylog(vim.eval('a:mode'))
+endfunction
+
+function! ToggleDaylog(task_number)
+  if a:task_number =~ '\d'
+    python3 daylog.toggle_task_status(vim.eval('a:task_number'))
+  else
+    echo "You have to enter a number."
+  endif
+  
+endfunction
+
+function! CloseDaylog()
+  python3 daylog.close_daylog()
 endfunction
 
 command! NewDaylog :call NewDaylog()
-command! ViewDaylog :call ViewDaylog()
+" TODO: have to fix this
+command! -nargs=1 ViewDaylog :call ViewDaylog(<f-args>)
+command! -nargs=1 ToggleDaylog :call ToggleDaylog(<f-args>)

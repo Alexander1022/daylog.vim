@@ -26,7 +26,11 @@ function! NewDaylog()
 endfunction
 
 function! ViewDaylog(mode)
-  python3 daylog.view_daylog(vim.eval('a:mode'))
+  python3 daylog.view(vim.eval('a:mode'))
+endfunction
+
+function ViewAll()
+  python3 daylog.view()
 endfunction
 
 function! ToggleDaylog(task_number)
@@ -35,14 +39,39 @@ function! ToggleDaylog(task_number)
   else
     echo "You have to enter a number."
   endif
-  
 endfunction
 
-function! CloseDaylog()
-  python3 daylog.close_daylog()
+function! DeleteDaylog(task_number)
+  if a:task_number =~ '\d'
+    python3 daylog.delete_task(vim.eval('a:task_number'))
+  else
+    echo "You have to enter a number."
+  endif
+endfunction
+
+function! DaylogsView()
+  python3 daylog.list_of_daylogs()
+endfunction
+
+function! SetToday()
+  python3 daylog.set_today()
+endfunction
+
+function! WipeDaylog()
+  python3 daylog.wipe_daylog()
+endfunction
+
+function! SetDaylog(daylog_date)
+  python3 daylog.set_daylog(vim.eval('a:daylog_date'))
 endfunction
 
 command! NewDaylog :call NewDaylog()
-" TODO: have to fix this
-command! -nargs=1 ViewDaylog :call ViewDaylog(<f-args>)
+command! -nargs=1 View :call ViewDaylog(<f-args>)
+command! ViewAll :call ViewAll()
 command! -nargs=1 ToggleDaylog :call ToggleDaylog(<f-args>)
+command! -nargs=1 DeleteDaylog :call DeleteDaylog(<f-args>)
+
+command! DaylogsList :call DaylogsView()
+command! SetToday :call SetToday()
+command! -nargs=1 SetDaylog :call SetDaylog(<f-args>)
+command! WipeDaylog :call WipeDaylog()

@@ -2,7 +2,7 @@ import vim
 import os
 import datetime
 import yaml
-from utils import check_daylog_file, create_file, check_date
+from utils import check_daylog_file, create_file, check_date, show_data
 
 daylog_dir = os.path.expanduser('~/.daylog_notes')
 today = datetime.datetime.now().strftime('%d-%m-%Y')
@@ -19,7 +19,7 @@ def set_today():
     vim.command('echo "Daylog\'s date is set to {}"'.format(today))
 
 def add_task(title):
-    task_data = {'title': title, 'status': False}
+    task_data = {'title': title, 'status': False, 'priority': 0}
     if not os.path.exists(file_path):
         create_file(file_path)
 
@@ -38,17 +38,19 @@ def wipe_daylog():
         data = check_daylog_file(file_path)
 
         if data is None:
+            vim.command('redraw!')
             vim.command('echo "There is not a log for this date!"')
             return
 
         f = open(file_path, 'r+')
         f.truncate()
 
-        vim.command('bd')
+        vim.command('redraw!')
         vim.command('echo "I wiped the daylog for {}"'.format(prompt))
         
         f.close()
-
+        return 
+    
 def new_daylog():
     prompt = vim.eval('input("Entry: ")')
     add_task(prompt)
@@ -60,6 +62,7 @@ def toggle_task_status(task_number):
     data = check_daylog_file(file_path)
 
     if data is None:
+        vim.command('redraw!')
         vim.command('echo "No daylog for today! You can create one with :NewDaylog"')
         return
 
@@ -138,6 +141,7 @@ def list_of_daylogs():
     vim.command('echo "Select a daylog to open it"')
     # Key mapping to open the selected daylog
     vim.command("nnoremap <buffer> <CR> :python3 daylog.handle_daylog_selection() <CR>")
+    vim.command("nnoremap <buffer> <Esc> :silent! hide<CR>")
 
 # Open a selected daylog file
 def handle_daylog_selection():
@@ -170,7 +174,64 @@ def set_daylog(daylog_date):
         vim.command('echo "The file is set."')
     
     else:
+        vim.command('redraw!')
         vim.command('echo "Invalid date!"')
+
+def order_daylog():
+    data = check_daylog_file(file_path)
+
+    if data is None:
+        vim.command('echo "No daylog for today! You can create one with :NewDaylog"')
+        return
+
+
+    data['tasks'] = sorted(data['tasks'], key=lambda k: k['priority'], reverse=True)
+    buf = vim.current.buffer
+    del buf[:]
+    
+    show_data(data, None, buf)
+    
+    vim.command("setlocal laststatus=2")
+    vim.command("setlocal title")
+    vim.command('setlocal titlestring=Daylog')
+    vim.command("setlocal buftype=nofile")
+    vim.command("setlocal bufhidden=hide")
+    vim.command("setlocal nobuflisted")
+    vim.command("setlocal nowrap")
+    vim.command("setlocal nonumber")
+    vim.command("setlocal norelativenumber")
+    vim.command("setlocal foldlevel=0")
+    vim.command("setlocal foldcolumn=0")
+    vim.command("setlocal signcolumn=yes")
+    vim.command("nnoremap <buffer> <Esc> :silent! hide<CR>")
+
+def prioritize(index, priority):
+    task_number = index.strip()
+    priority = priority.strip()
+
+    task_number = int(task_number)
+    priority = int(priority)
+
+    data = check_daylog_file(file_path)
+
+    if data is None:
+        vim.command('echo "No daylog for today! You can create one with :NewDaylog"')
+        return
+
+    if task_number > len(data['tasks']) or task_number < 1:
+        vim.command('echo "Invalid entry number! Are you sure you\'re in the right daylog?"')
+        return
+
+    if(priority > 5 or priority < 0):
+        vim.command('echo "Invalid priority number! Must be between 0 and 5"')
+        return
+
+    data['tasks'][task_number - 1]['priority'] = priority
+    with open(file_path, 'w') as file:
+        yaml.dump(data, file)
+
+    vim.command('bd')
+    view_daylog(args='all')
 
 def view_daylog(args=None):
     data = check_daylog_file(file_path)
@@ -182,20 +243,7 @@ def view_daylog(args=None):
         buf = vim.current.buffer
         del buf[:]
 
-        for i, task in enumerate(data['tasks']):
-            status = '\u2713' if task['status'] else " "
-            title = task['title']
-
-            if args == 'done':
-                if task['status']:
-                    buf.append(f"{i + 1}. ({status}) {title}")
-
-            elif args == 'not_done':
-                if not task['status']:
-                    buf.append(f"{i + 1}. ({status}) {title}")
-
-            elif args == 'all' or args == None:
-                buf.append(f"{i + 1}. ({status}) {title}")
+        show_data(data, args, buf)
 
         vim.command("setlocal laststatus=2")
         vim.command("setlocal title")
@@ -209,3 +257,4 @@ def view_daylog(args=None):
         vim.command("setlocal foldlevel=0")
         vim.command("setlocal foldcolumn=0")
         vim.command("setlocal signcolumn=yes")
+        vim.command("nnoremap <buffer> <Esc> :silent! hide<CR>")

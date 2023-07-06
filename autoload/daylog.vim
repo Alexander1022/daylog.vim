@@ -65,8 +65,17 @@ function! SetDaylog(daylog_date)
   python3 daylog.set_daylog(vim.eval('a:daylog_date'))
 endfunction
 
+function! Prioritize(index, priority)
+  python3 daylog.prioritize(vim.eval('a:index'), vim.eval('a:priority'))
+endfunction
+
+function! OrderDaylog()
+  python3 daylog.order_daylog()
+endfunction
+
 command! NewDaylog :call NewDaylog()
 command! -nargs=1 View :call ViewDaylog(<f-args>)
+command! Order :call OrderDaylog()
 command! ViewAll :call ViewAll()
 command! -nargs=1 ToggleDaylog :call ToggleDaylog(<f-args>)
 command! -nargs=1 DeleteDaylog :call DeleteDaylog(<f-args>)
@@ -75,3 +84,5 @@ command! DaylogsList :call DaylogsView()
 command! SetToday :call SetToday()
 command! -nargs=1 SetDaylog :call SetDaylog(<f-args>)
 command! WipeDaylog :call WipeDaylog()
+
+command! -nargs=* Prioritize :call Prioritize(<f-args>)

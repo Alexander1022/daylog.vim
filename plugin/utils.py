@@ -13,10 +13,12 @@ def check_daylog_file(file_path):
     else:
         return None
 
+# Creates a new file
 def create_file(file_path):
     with open(file_path, 'w'):
         pass
 
+# Check if a date parsed is in the right format
 def check_date(date):
     try:
         day, month, year = date.split('-')
@@ -38,3 +40,20 @@ def check_date(date):
     
     except ValueError:
         return False
+
+def show_data(data, args=None, buf=[]):
+    for i, task in enumerate(data['tasks']):
+            status = '\u2713' if task['status'] else " "
+            title = task['title']
+            priority = "[ " + "*" * task['priority'] + " ]"
+
+            if args == 'done':
+                if task['status']:
+                    buf.append(f"{i + 1}. {priority} ({status}) {title}")
+
+            elif args == 'not_done':
+                if not task['status']:
+                    buf.append(f"{i + 1}. {priority} ({status}) {title}")
+
+            elif args == 'all' or args == None:
+                buf.append(f"{i + 1}. {priority} ({status}) {title}")

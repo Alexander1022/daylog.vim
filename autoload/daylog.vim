@@ -73,16 +73,27 @@ function! OrderDaylog()
   python3 daylog.order_daylog()
 endfunction
 
+" @command :NewDaylog
 command! NewDaylog :call NewDaylog()
+" @command :View <mode>
 command! -nargs=1 View :call ViewDaylog(<f-args>)
+" @command :Order 
 command! Order :call OrderDaylog()
+" @command :ViewAll
 command! ViewAll :call ViewAll()
+" @command :ToggleDaylog <entry_number>
 command! -nargs=1 ToggleDaylog :call ToggleDaylog(<f-args>)
+" @command :DeleteDaylog <entry_number>
 command! -nargs=1 DeleteDaylog :call DeleteDaylog(<f-args>)
 
+" @command :DaylogsList
 command! DaylogsList :call DaylogsView()
+" @command :SetToday
 command! SetToday :call SetToday()
+" @command :SetDaylog <daylog_date>
 command! -nargs=1 SetDaylog :call SetDaylog(<f-args>)
+" @command :WipeDaylog
 command! WipeDaylog :call WipeDaylog()
 
+" @command :Prioritize <index> <priority>
 command! -nargs=* Prioritize :call Prioritize(<f-args>)
